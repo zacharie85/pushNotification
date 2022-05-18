@@ -5,14 +5,15 @@ import _ from 'lodash';
 import axios from 'axios';
 import * as Animatable from 'react-native-animatable';
 
-import { Provider,useSelector,useDispatch } from 'react-redux';
-
+import { Provider, useSelector, useDispatch } from 'react-redux';
+import HeaderScreen from '../components/Header';
 import store from '../redux/store';
 import { setItemsSelected } from '../redux/reducer';
+import { Container } from 'native-base';
 
-export default function Home({navigation}) {
+export default function Home({ navigation }) {
 
-    const AppScreen  =()=>{
+    const AppScreen = () => {
         const [motCles, setMotCles] = React.useState('');
         const [isLoading, setIsloading] = React.useState(false);
         const [books, setBooks] = React.useState([]);
@@ -34,7 +35,7 @@ export default function Home({navigation}) {
                         dispatch(setItemsSelected(item));
                         navigation.navigate('Details')
                     }}>
-    
+
                     <Animatable.View style={Styles.cardInfos} animation="fadeInLeft" duration={1000}>
                         <View style={Styles.image}>
                             <Image
@@ -48,12 +49,12 @@ export default function Home({navigation}) {
                             <Text style={{ fontWeight: 'bold', textAlign: 'center' }}>{item.volumeInfo && item.volumeInfo.title ? item.volumeInfo.title : 'Livre'}</Text>
                         </View>
                     </Animatable.View>
-    
+
                 </TouchableOpacity>
             );
-    
+
         }
-    
+
         const loadMoreData = async () => {
             // on va chercher les 10 autres elements a partir du max +1
             setIsloading(true);
@@ -63,19 +64,19 @@ export default function Home({navigation}) {
             } else {
                 index = index + 1;
             }
-    
+
             setTimeout(async () => {
                 try {
-    
+
                     const url = `https://www.googleapis.com/books/v1/volumes?q=${motCles}&maxResults=${MAX_DATA}&startIndex=${index}`;
                     const {
                         data
                     } = await axios.get(url);
-    
+
                     const array = [...books, ...data.items];
                     let uniq = [...new Set(array)]; // enlever duplication si il ya en a
                     setBooks(uniq);
-    
+
                 } catch (error) {
                     console.error('error on search ', error)
                 }
@@ -83,16 +84,16 @@ export default function Home({navigation}) {
             }, 1000);
             setCurrentIndex(index);
         }
-    
+
         const renderFooter = () => {
             return (
                 isLoading && (<View style={Styles.renderFooter}>
                     <ActivityIndicator size={'large'} color={'black'} />
                 </View>)
-    
+
             )
         }
-    
+
         const listeViewRender =
             <FlatList
                 refreshControl={<RefreshControl
@@ -109,12 +110,12 @@ export default function Home({navigation}) {
                 onEndReached={loadMoreData}
                 onEndReachedThreshold={0.2}
             />;
-    
+
         const onSearch = async (text) => {
-            if(text.length != 0){
+            if (text.length != 0) {
                 setIsloading(true);
                 try {
-    
+
                     const url = `https://www.googleapis.com/books/v1/volumes?q=${text}&maxResults=10&startIndex=0`;
                     const {
                         data
@@ -125,15 +126,20 @@ export default function Home({navigation}) {
                     console.error('error on search', error);
                     setIsloading(false);
                 }
-        
-            }else{
+
+            } else {
                 setBooks([]);
             }
-       
+
         }
-    
+
+        const onPress =()=>{
+            console.log('cancel');
+        }
+
         return (
-            <View style={Styles.centredHome}>
+            <Container>
+                <HeaderScreen OnPress={onPress} title={'Liste'} haveIcon={false}/>
                 <View style={Styles.inputContainer}>
                     <TextInput style={Styles.styleImput}
                         placeholder="mot clés...."
@@ -150,11 +156,11 @@ export default function Home({navigation}) {
                     />
                     {isLoading && <ActivityIndicator color={'black'} />}
                 </View>
-    
-                <View style={{  flex: 1 }}>
+
+                <View style={{ flex: 1 }}>
                     {listeViewRender}
                 </View>
-            </View>
+            </Container>
         )
     }
 

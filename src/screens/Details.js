@@ -1,28 +1,34 @@
 import React from 'react'
 import Styles from '../components/Styles';
-import {View,Text} from 'react-native';
-import { Provider,useSelector,useDispatch } from 'react-redux';
+import { View, Text } from 'react-native';
+import { Provider, useSelector, useDispatch } from 'react-redux';
 import store from '../redux/store';
 import { setItemsSelected } from '../redux/reducer';
+import { Container } from 'native-base';
+import HeaderScreen from '../components/Header';
 
-export default function Details() {
-  const AppScreen =()=>{
+export default function Details({navigation}) {
+  const AppScreen = () => {
     const dispatch = useDispatch();
 
     const itemSelected = useSelector(state => state.itemSelected);
 
     console.log(itemSelected);
+    const onPress = () => {
+     navigation.goBack();
+    }
 
     return (
-      <View style={Styles.centredHome}>
-          <Text style={Styles.centredText}>Details </Text>
-      </View>
-     )
-     
+      <Container>
+        <HeaderScreen OnPress={onPress} title={'Details'} haveIcon={true} />
+        <Text style={Styles.centredText}>Details </Text>
+      </Container>
+    )
+
   }
   return (
     <Provider store={store}>
-        <AppScreen />
+      <AppScreen />
     </Provider>
-);
+  );
 }
