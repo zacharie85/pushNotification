@@ -1,0 +1,1 @@
+export const SET_ITEMS_SELECTED = 'SET_ITEMS_SELECTED';

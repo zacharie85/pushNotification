@@ -4,102 +4,163 @@ import { View, TextInput, TouchableOpacity, Keyboard, RefreshControl, FlatList, 
 import _ from 'lodash';
 import axios from 'axios';
 import * as Animatable from 'react-native-animatable';
-export default function Home() {
 
-    const [motCles, setMotCles] = React.useState('');
-    const [isLoading, setIsloading] = React.useState(false);
-    const [data, setData] = React.useState([]);
+import { Provider,useSelector,useDispatch } from 'react-redux';
 
-    const delayedQuery = React.useRef(_.debounce(q => onSearch(q), 500)).current;
+import store from '../redux/store';
+import { setItemsSelected } from '../redux/reducer';
 
-    renderItem = ({ item }) => {
-        let res ='';
-        if(item.volumeInfo.imageLinks.thumbnail){
-             res = item.volumeInfo.imageLinks.thumbnail.replace(/http/g, "https");
+export default function Home({navigation}) {
+
+    const AppScreen  =()=>{
+        const [motCles, setMotCles] = React.useState('');
+        const [isLoading, setIsloading] = React.useState(false);
+        const [books, setBooks] = React.useState([]);
+        const [currentIndex, setCurrentIndex] = React.useState(0);
+        const MAX_DATA = 10;
+        const delayedQuery = React.useRef(_.debounce(q => onSearch(q), 500)).current;
+        const dispatch = useDispatch();
+
+        renderItem = ({ item }) => {
+            let imageLinkDefault = 'http://books.google.com/books/content?id=jCA_DQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api';
+            let res = '';
+            if (item.volumeInfo && item.volumeInfo.imageLinks && item.volumeInfo.imageLinks.thumbnail) {
+                imageLinkDefault = item.volumeInfo.imageLinks.thumbnail;
+            }
+            res = imageLinkDefault.replace(/http/g, "https");
+            return (
+                <TouchableOpacity
+                    onPress={() => {
+                        dispatch(setItemsSelected(item));
+                        navigation.navigate('Details')
+                    }}>
+    
+                    <Animatable.View style={Styles.cardInfos} animation="fadeInLeft" duration={1000}>
+                        <View style={Styles.image}>
+                            <Image
+                                style={Styles.stretch}
+                                source={{
+                                    uri: res
+                                }}
+                            />
+                        </View>
+                        <View style={Styles.title}>
+                            <Text style={{ fontWeight: 'bold', textAlign: 'center' }}>{item.volumeInfo && item.volumeInfo.title ? item.volumeInfo.title : 'Livre'}</Text>
+                        </View>
+                    </Animatable.View>
+    
+                </TouchableOpacity>
+            );
+    
         }
-
+    
+        const loadMoreData = async () => {
+            // on va chercher les 10 autres elements a partir du max +1
+            setIsloading(true);
+            let index = currentIndex;
+            if (index == 0) {
+                index = index + MAX_DATA + 1;
+            } else {
+                index = index + 1;
+            }
+    
+            setTimeout(async () => {
+                try {
+    
+                    const url = `https://www.googleapis.com/books/v1/volumes?q=${motCles}&maxResults=${MAX_DATA}&startIndex=${index}`;
+                    const {
+                        data
+                    } = await axios.get(url);
+    
+                    const array = [...books, ...data.items];
+                    let uniq = [...new Set(array)]; // enlever duplication si il ya en a
+                    setBooks(uniq);
+    
+                } catch (error) {
+                    console.error('error on search ', error)
+                }
+                setIsloading(false);
+            }, 1000);
+            setCurrentIndex(index);
+        }
+    
+        const renderFooter = () => {
+            return (
+                isLoading && (<View style={Styles.renderFooter}>
+                    <ActivityIndicator size={'large'} color={'black'} />
+                </View>)
+    
+            )
+        }
+    
+        const listeViewRender =
+            <FlatList
+                refreshControl={<RefreshControl
+                    refreshing={isLoading}
+                    onRefresh={async () => {
+                        await onSearch(motCles);
+                    }
+                    }
+                />}
+                data={books}
+                renderItem={renderItem}
+                keyExtractor={item => item.id}
+                ListFooterComponent={renderFooter}
+                onEndReached={loadMoreData}
+                onEndReachedThreshold={0.2}
+            />;
+    
+        const onSearch = async (text) => {
+            if(text.length != 0){
+                setIsloading(true);
+                try {
+    
+                    const url = `https://www.googleapis.com/books/v1/volumes?q=${text}&maxResults=10&startIndex=0`;
+                    const {
+                        data
+                    } = await axios.get(url);
+                    setBooks(data.items);
+                    setIsloading(false);
+                } catch (error) {
+                    console.error('error on search', error);
+                    setIsloading(false);
+                }
+        
+            }else{
+                setBooks([]);
+            }
+       
+        }
+    
         return (
-            <TouchableOpacity
-                onPress={() => {
-                    navigation.navigate('Details')
-                }}>
-
-                <Animatable.View style={Styles.cardInfos} animation="fadeInLeft" duration={1000}>
-                    <View style={{ flex: .5, width: ((Dimensions.get('screen').width - 50) / 2) }}>
-                        <Image
-                            style={Styles.stretch}
-                            source={{
-                                uri:res
-                            }}
-                        /> 
-                    </View>
-                    <View style={{ flex: .5, width: ((Dimensions.get('screen').width - 50) / 2),justifyContent:'center' }}>
-                        <Text style={{fontWeight:'bold',textAlign:'center'}}>{item.volumeInfo.title}</Text>
-                    </View>
-                </Animatable.View>
-
-            </TouchableOpacity>
-        );
-
-    }
-
-    let listeViewRender =
-        <FlatList
-            onScroll={() => Keyboard.dismiss()}
-            refreshControl={<RefreshControl
-                refreshing={isLoading}
-                onRefresh={async () => {
-                    await onSearch(motCles);
-                }
-                }
-            />}
-            data={data}
-            renderItem={renderItem}
-            keyExtractor={item => item.recordId}
-        />
-
-    onSearch = async (text) => {
-        setIsloading(true);
-        try {
-
-            const url = `https://www.googleapis.com/books/v1/volumes?q=${text}`;
-            const {
-                data
-            } = await axios.get(url);
-
-            console.log(data.items[0].volumeInfo.imageLinks);
-
-            setData(data.items);
-
-        } catch (error) {
-            console.error('error prediction press', error)
-        }
-        setIsloading(false);
+            <View style={Styles.centredHome}>
+                <View style={Styles.inputContainer}>
+                    <TextInput style={Styles.styleImput}
+                        placeholder="mot clés...."
+                        placeholderTextColor={"grey"}
+                        keyboardType={'email-address'}
+                        selectionColor={'black'}
+                        autoCapitalize={'none'}
+                        autoCorrect={false}
+                        value={motCles}
+                        onChangeText={(text) => {
+                            setMotCles(text)
+                            delayedQuery(text)
+                        }}
+                    />
+                    {isLoading && <ActivityIndicator color={'black'} />}
+                </View>
+    
+                <View style={{  flex: 1 }}>
+                    {listeViewRender}
+                </View>
+            </View>
+        )
     }
 
     return (
-        <View style={Styles.centredHome}>
-            <View style={Styles.inputContainer}>
-                <TextInput style={Styles.styleImput}
-                    placeholder="mot clés...."
-                    placeholderTextColor={"grey"}
-                    keyboardType={'email-address'}
-                    selectionColor={'black'}
-                    autoCapitalize={'none'}
-                    autoCorrect={false}
-                    value={motCles}
-                    onChangeText={(text) => {
-                        setMotCles(text)
-                        delayedQuery(text)
-                    }}
-                />
-                {isLoading && <ActivityIndicator color={'black'} />}
-            </View>
-            {!isLoading && (
-                <View style={{ height: Math.round(Dimensions.get('window').height) - 50, flex: 1 }}>
-                    {listeViewRender}
-                </View>)}
-        </View>
-    )
-
+        <Provider store={store}>
+            <AppScreen />
+        </Provider>
+    );
 }

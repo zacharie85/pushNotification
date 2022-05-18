@@ -42,4 +42,13 @@ export default Styles = StyleSheet.create({
         height: 170,
         resizeMode: 'stretch',
     },
+    renderFooter:{
+        marginTop: 40, alignItems: 'center' 
+    },
+    image:{
+        flex: .5, width: ((Dimensions.get('screen').width - 50) / 2)
+    },
+    title:{
+        flex: .5, width: ((Dimensions.get('screen').width - 50) / 2), justifyContent: 'center' 
+    }
 })
