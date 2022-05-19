@@ -1,4 +1,4 @@
-# bunidEvaluation
+# BunidEvaluation
 Tout d’abord s'assurer que l’environnement  de développement soit configurer, si c'est pas le cas suivre les informations ( https://reactnative.dev/docs/environment-setup)
 Ouvrir cliquer sur le lien fournie pour aller sur le Repositories
 copier le lien de sur le bouton ( code en vert)
