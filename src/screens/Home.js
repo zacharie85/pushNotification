@@ -4,7 +4,7 @@ import { View, TextInput, TouchableOpacity, Keyboard, RefreshControl, FlatList, 
 import _ from 'lodash';
 import axios from 'axios';
 import * as Animatable from 'react-native-animatable';
-
+import { getImagesWithHttps } from '../functions';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import HeaderScreen from '../components/Header';
 import store from '../redux/store';
@@ -23,12 +23,7 @@ export default function Home({ navigation }) {
         const dispatch = useDispatch();
 
         renderItem = ({ item }) => {
-            let imageLinkDefault = 'http://books.google.com/books/content?id=jCA_DQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api';
-            let res = '';
-            if (item.volumeInfo && item.volumeInfo.imageLinks && item.volumeInfo.imageLinks.thumbnail) {
-                imageLinkDefault = item.volumeInfo.imageLinks.thumbnail;
-            }
-            res = imageLinkDefault.replace(/http/g, "https");
+           let res = getImagesWithHttps(item);
             return (
                 <TouchableOpacity
                     onPress={() => {
