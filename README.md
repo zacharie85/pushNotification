@@ -1,4 +1,4 @@
-# BunidEvaluation
+# Exemple de push notifications sur android et ios
 
 # Étape 1 
 Tout d’abord s'assurer que l’environnement  de développement soit configurer, si c'est pas le cas suivre les informations ( https://reactnative.dev/docs/environment-setup)
