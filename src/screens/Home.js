@@ -70,7 +70,7 @@ export default function Home({ navigation }) {
                 message: "My Notification Message", // (required)
                 picture: "https://www.example.tld/picture.jpg", // (optional) Display an picture with the notification, alias of `bigPictureUrl` for Android. default: undefined
                 userInfo: {}, // (optional) default: {} (using null throws a JSON value '<null>' error)
-                playSound: false, // (optional) default: true
+                playSound: true, // (optional) default: true
                 soundName: "default", // (optional) Sound to play when the notification is shown. Value of 'default' plays the default sound. It can be set to a custom sound such as 'android.resource://com.xyz/raw/my_sound'. It will look for the 'my_sound' audio file in 'res/raw' directory and play it. default: 'default' (default sound is played)
                 number: 10, // (optional) Valid 32 bit integer specified as string. default: none (Cannot be zero) // (optional) Repeating interval. Check 'Repeating Notifications' section for more info.
               });
